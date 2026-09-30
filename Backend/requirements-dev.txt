@@ -1,0 +1,16 @@
+-r requirements.txt
+
+# Tests
+pytest
+pytest-asyncio
+pytest-cov
+respx
+Faker
+freezegun
+
+# Static analysis and formatting
+ruff
+mypy
+pre-commit
+types-PyYAML
+types-redis
