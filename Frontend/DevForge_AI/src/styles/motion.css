@@ -1,0 +1,120 @@
+/* Shared visual and motion language. No animation library or cursor replacement. */
+:root {
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --shadow-rest: 0 3px 12px #202c4d04, 0 1px 3px #202c4d03;
+  --shadow-raised: 0 16px 36px #202c4d0d, 0 4px 10px #202c4d06;
+  --glow: #6485ff16;
+}
+:root[data-theme="dark"] {
+  --shadow-rest: 0 3px 12px #00000012;
+  --shadow-raised: 0 16px 36px #00000030, 0 4px 10px #00000020;
+  --glow: #829bff1a;
+}
+body { background-image: radial-gradient(ellipse at 90% 0%, var(--glow), transparent 55%); }
+::selection { background: #4c70f038; color: var(--ink); }
+.panel { box-shadow: var(--shadow-rest); }
+.topbar { backdrop-filter: blur(18px); }
+.page-header h1, .auth-title { color: var(--ink); }
+.brand-icon { box-shadow: 0 4px 12px #4c70f029; }
+.sidebar-note { background-image: radial-gradient(ellipse at top right, var(--glow), transparent 75%); }
+.auth-story { background-image: radial-gradient(ellipse at 0% 15%, #5472d542, transparent 60%), radial-gradient(ellipse at 100% 100%, #7760d536, transparent 60%); }
+.auth-main { background-image: radial-gradient(ellipse at 100% 0%, var(--glow), transparent 65%); }
+.workflow-preview { backdrop-filter: blur(12px); }
+.stat-card, .project-card, .workflow-preview, .welcome-panel { position: relative; isolation: isolate; }
+.stat-card::after, .project-card::after, .workflow-preview::after, .welcome-panel::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(280px circle at var(--pointer-x, 50%) var(--pointer-y, 0%), var(--glow), transparent 100%);
+  opacity: 0; transition: opacity 250ms ease;
+}
+[data-spotlight]::after { opacity: 1; }
+.button, .nav-link, .theme-toggle, .password-toggle, .project-card, .stat-card, .task-card {
+  transition: transform 220ms var(--ease-out), background-color 250ms ease, color 250ms ease,
+    border-color 250ms ease, box-shadow 250ms ease;
+}
+.button-primary { background-image: linear-gradient(165deg, #ffffff14, transparent 70%); box-shadow: 0 3px 8px #4c70f022; }
+.button svg, .text-link svg, .task-title svg, .brand-icon, .stat-icon, .project-icon, .feature-icon {
+  transition: transform 250ms var(--ease-out), background-color 250ms ease, color 250ms ease, box-shadow 250ms ease;
+}
+.nav-link { position: relative; }
+.nav-link::before {
+  content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px;
+  border-radius: 0 3px 3px 0; background: var(--primary); transform: scaleY(0);
+  transition: transform 280ms var(--ease-out);
+}
+.nav-link.active::before { transform: scaleY(1); }
+.nav-link.active { box-shadow: inset 0 0 0 1px var(--accent-border); }
+.nav-link svg { transition: transform 250ms var(--ease-out); }
+.input { transition: border-color 200ms ease, box-shadow 200ms ease, background-color 250ms ease; caret-color: var(--primary); }
+.input:focus { box-shadow: 0 4px 16px #4c70f00c; }
+.field label { transition: color 200ms ease; }
+.field:focus-within label { color: var(--primary-text); }
+.field:has([aria-invalid="true"]) label { color: var(--danger); }
+.select-wrap { position: relative; }
+.select-wrap:not(.select-list) select { appearance: none; padding-right: 42px; cursor: pointer; }
+.select-wrap select:disabled { cursor: not-allowed; }
+.select-chevron { position: absolute; right: 14px; top: 50%; color: var(--muted); pointer-events: none; transform: translateY(-50%); transition: transform 220ms var(--ease-out), color 220ms ease; }
+.select-wrap:focus-within .select-chevron { color: var(--primary-text); transform: translateY(-50%) rotate(180deg); }
+.select-wrap option:checked { background: var(--accent-soft); color: var(--primary-text); }
+.task-card:focus-within { background: var(--hover); box-shadow: inset 3px 0 var(--primary); }
+.project-card:focus-within { border-color: var(--input-hover); box-shadow: var(--shadow-raised); }
+.cursor-halo { display: none; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 40; pointer-events: none; transition: none; }
+.cursor-halo span { display: block; width: 28px; height: 28px; border: 1px solid #6989f84d; background: #6485ff08; border-radius: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 180ms ease, width 220ms var(--ease-out), height 220ms var(--ease-out), background-color 180ms ease; }
+.cursor-halo[data-visible] span { opacity: 1; }
+.cursor-halo[data-interactive] span { width: 42px; height: 42px; background: #6485ff10; }
+.cursor-halo[data-pressed] span { width: 20px; height: 20px; background: #6485ff24; }
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-raised); }
+  .button-primary:hover:not(:disabled) { box-shadow: 0 7px 18px #4c70f038; }
+  .button-ghost:hover:not(:disabled) { box-shadow: none; }
+  .button:hover:not(:disabled) > svg:last-child, .text-link:hover svg { transform: translateX(3px); }
+  .nav-link:hover { transform: translateX(3px); }
+  .nav-link:hover svg { transform: scale(1.08); }
+  .brand-link:hover .brand-icon { transform: rotate(-7deg); box-shadow: 0 6px 16px #4c70f038; }
+  .project-card:hover, .stat-card:hover { transform: translateY(-4px); border-color: var(--input-hover); box-shadow: var(--shadow-raised); }
+  .project-card:hover .project-icon, .stat-card:hover .stat-icon { transform: rotate(-5deg) scale(1.06); }
+  .task-card:hover { box-shadow: inset 3px 0 var(--primary); }
+  .task-title:hover svg { transform: translate(2px, -2px); }
+  .password-toggle:hover { color: var(--primary-text); background: var(--accent-soft); }
+  .theme-toggle:hover { box-shadow: 0 4px 14px var(--glow); }
+}
+.button:active:not(:disabled), .nav-link:active, .theme-toggle:active { transform: translateY(0) scale(.98); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .main-content { animation: page-enter 420ms var(--ease-out) both; }
+  .auth-form-container { animation: page-enter 550ms var(--ease-out) both; }
+  .story-content > * { animation: page-enter 650ms var(--ease-out) both; }
+  .story-content > :nth-child(2) { animation-delay: 70ms; }
+  .story-content > :nth-child(3) { animation-delay: 140ms; }
+  .story-content > :nth-child(4) { animation-delay: 210ms; }
+  .stats-grid > *, .project-grid > *, .task-list > * { animation: item-enter 480ms var(--ease-out) backwards; }
+  .stats-grid > :nth-child(2), .project-grid > :nth-child(2), .task-list > :nth-child(2) { animation-delay: 45ms; }
+  .stats-grid > :nth-child(3), .project-grid > :nth-child(3), .task-list > :nth-child(3) { animation-delay: 90ms; }
+  .stats-grid > :nth-child(4), .project-grid > :nth-child(4), .task-list > :nth-child(4) { animation-delay: 135ms; }
+  .stats-grid > :nth-child(n+5), .project-grid > :nth-child(n+5), .task-list > :nth-child(n+5) { animation-delay: 180ms; }
+  .modal[open] { animation: dialog-enter 260ms var(--ease-out) both; }
+  .modal[open]::backdrop { animation: backdrop-enter 220ms ease both; }
+  .live-dot { animation: signal-pulse 3s ease-out infinite; }
+  .workflow-step .step-check { animation: check-enter 450ms var(--ease-out) backwards; }
+  .workflow-step:nth-child(3) .step-check { animation-delay: 450ms; }
+  .workflow-step:nth-child(4) .step-check { animation-delay: 600ms; }
+  .workflow-step:nth-child(5) .step-check { animation-delay: 750ms; }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) { .cursor-halo { display: block; } }
+@keyframes page-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes item-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dialog-enter { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes backdrop-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes check-enter { from { opacity: 0; transform: scale(.65); } to { opacity: 1; transform: scale(1); } }
+@keyframes signal-pulse { 0%, 100% { box-shadow: 0 0 0 4px #b8caff20; } 50% { box-shadow: 0 0 0 8px #b8caff00; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .cursor-halo { display: none; }
+  .button, .nav-link, .theme-toggle, .project-card, .stat-card, .brand-icon, .project-icon, .stat-icon, .button svg, .text-link svg, .task-title svg, .nav-link svg { transform: none !important; }
+}
+@media (forced-colors: active) {
+  .cursor-halo, [data-spotlight]::after { display: none; }
+  .nav-link.active { outline: 1px solid Highlight; }
+  .select-wrap:not(.select-list) select { appearance: auto; }
+  .select-chevron { display: none; }
+}

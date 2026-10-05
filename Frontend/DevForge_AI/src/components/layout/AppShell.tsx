@@ -17,7 +17,7 @@ export default function AppShell() {
     <a className="skip-link" href="#main-content">Skip to content</a>
     <aside className="sidebar"><Sidebar /></aside>
     <Modal open={menuOpen} onClose={() => setMenuOpen(false)} title="Navigation"><Sidebar onNavigate={() => setMenuOpen(false)} /></Modal>
-    <div className="app-body"><Topbar onMenu={() => setMenuOpen(true)} /><main id="main-content" className="main-content" ref={main} tabIndex={-1}><Outlet /></main>
+    <div className="app-body"><Topbar onMenu={() => setMenuOpen(true)} /><main key={pathname} id="main-content" className="main-content" ref={main} tabIndex={-1}><Outlet /></main>
       <footer className="workspace-footer"><span>DevForge AI</span><span>Build with intention.</span></footer>
     </div>
   </div>
