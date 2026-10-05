@@ -1,6 +1,6 @@
 # DevForge AI frontend
 
-Implementation of **days 1–7** of the supplied *Frontend 30 Days Plan* (PDF pages 9–15), retaining the existing React + TypeScript + Vite project. Days 6–7 add the dashboard and searchable project list; the sidebar day/night preference remains available throughout.
+Implementation of **days 1–12** of the supplied *Frontend 30 Days Plan*, retaining the existing React + TypeScript + Vite project. Day 8 (PDF page 16) adds project creation and repository connection. Days 9–12 (PDF pages 17–21) add project details, task creation, model selection, and start/cancel controls.
 
 ## Run locally
 
@@ -27,11 +27,18 @@ Open the local URL printed by Vite. A local, git-ignored `.env.local` is already
 | 4 | Login page and form, required-field/email validation, password visibility, pending/error states, Enter submission |
 | 5 | Register/confirm-password validation, typed auth service, shared auth state, session initialization, protected routes, return to requested route, logout |
 | 6 | Project/running/approval/completed/failed counts, recent tasks sorted by latest activity, task links, approval review links, Open Projects CTA, clear empty states |
-| 7 | Searchable project cards, repository status, default branch, recent task count, Open links, loading skeletons, recoverable API errors, create/connect availability dialog |
+| 7 | Searchable project cards, repository status, default branch, recent task count, Open links, loading skeletons, recoverable API errors |
+| 8 | Create/connect project form, HTTPS repository URL and branch validation, duplicate/error handling, duplicate-submit protection, project details redirect, preparation status |
+| 9 | Project-by-ID loading, repository readiness/indexing/error status, branch, recent tasks, collapsible file metadata, and full task history view |
+| 10 | Task description/examples, supported modes, optional constraints, validation, duplicate-submit protection, create API and execution redirect |
+| 11 | Auto model default, advanced provider/model selection from backend configuration, disabled unavailable choices, saved task metadata, no credential inputs |
+| 12 | Task get/create/start/cancel/diff/tests services, detail loading, pending-only Start AI, confirmed cancellation for running/waiting tasks, readable API errors |
 
-The demo account displays three sample projects and six tasks covering every status. New demo registrations have empty workspaces. Fixture repositories and task activity are illustrative; no repository is cloned and no AI task is executed. Fixtures load only in development demo mode and are excluded from production builds.
+The demo account displays three sample projects and six initial tasks covering every status. New demo registrations have empty workspaces. The Commerce storefront project is ready for task creation; Platform API illustrates indexing and Design system has no connected repository. Create tasks in Commerce, select Auto or an available demo model, start them, and confirm cancellation. Created tasks appear in project history and dashboard activity. Changes live in memory and reset on refresh. Provider availability and model names are illustrative. No repository is cloned, no AI runs, and no code changes or tests are executed. Fixtures load only in development demo mode and are excluded from production builds.
 
-The Create / Connect Project button opens an availability notice. Actual project creation and connection are scheduled for day 8; project details are scheduled for day 9. Open Project and task links lead to the existing reserved detail/execution routes. Task creation/execution, the recent-tasks page, and later workflow features remain placeholders.
+The **Create / Connect project** button opens a form with project name, optional description, repository URL, and default branch (initially `main`). It accepts HTTPS clone URLs without embedded credentials, query parameters, or fragments. Successful creation redirects to project details, where repository preparation status is visible. New demo registrations can create projects too; demo projects initially show indexing, then become ready when you click **Refresh project** after three seconds. Their file lists stay empty because no real repository is fetched. Projects are isolated per demo account and remain available when signing out/in within the same page session, until refresh.
+
+Open Project and task links load their respective details. Task creation requires a ready repository and loaded backend capabilities. Start and cancel update the view from the server response; Refresh details retrieves subsequent state. Live streaming, the full execution dashboard, code/test viewers, and approval decisions belong to later days. The standalone recent-tasks page remains a placeholder; use the dashboard or project history to open tasks.
 
 Both pages retain loading, empty, and error states. Search matches project names, descriptions, repository URLs, and branches without case sensitivity; no search matches is distinct from an empty workspace. Dashboard counts use all returned tasks, while recent activity shows the six most recently updated tasks. Failed requests show unavailable counts rather than misleading zeroes, and each resource can be retried independently.
 
@@ -99,9 +106,75 @@ npm run build
 npm run preview
 ```
 
-Tests cover field validation, password visibility, Enter submission, pending/duplicate submission, registration payloads, protected deep links, all reserved routes, session restoration, logout success/failure, HTTP errors, and accessible status/field labels.
+Tests cover field validation, password visibility, Enter submission, pending/duplicate submission, registration payloads, protected deep links, all routes, session restoration, logout success/failure, HTTP errors, and accessible status/field labels.
 
-Workspace tests additionally cover computed counts, recent-task ordering, all task statuses, approval/task/project links, case-insensitive search and clearing search, missing repositories, skeletons, empty states, retry recovery, malformed responses, the connection notice, and isolation from late requests after an account change.
+Workspace tests additionally cover computed counts, recent-task ordering, all task statuses, approval/task/project links, case-insensitive search and clearing search, missing repositories, skeletons, empty states, retry recovery, malformed responses, the create/connect dialog, and isolation from late requests after an account change.
+
+Day 8 tests cover required fields, URL/branch validation, normalized create payloads, Enter submission, indexing status after redirect, duplicate and failed creation with retry, disabled submission/dismissal while pending, account changes, and demo preparation plus project ownership.
+
+### Project creation API contract (day 8)
+
+`POST /projects` accepts the following JSON body and returns a complete `ProjectDetails` (defined below), including its server-assigned ID and repository status. Use HTTP 201, or 202 if preparation is queued. The frontend then loads `GET /projects/:projectId` after redirecting.
+
+```ts
+type CreateProjectInput = {
+  name: string // required, at most 100 characters
+  description: string // optional content, at most 2,000 characters
+  repositoryUrl: string // required HTTPS clone URL, at most 2,048 characters
+  defaultBranch: string // required branch, at most 255 characters
+}
+```
+
+Return 409 for a duplicate project name/repository, 422 for invalid fields, and an appropriate 5xx status for server failures. The frontend shows project-specific errors and preserves form values for retry. It disables repeat submission and dialog dismissal while creation is pending. The backend remains responsible for authentication, ownership, uniqueness, URL/branch validation, safe repository fetching, and asynchronous preparation/indexing; frontend validation alone does not authorize or secure a clone. No credentials are entered into this form, and no repository is fetched directly from the browser. In API mode these endpoints must be implemented before real connections work.
+
+Task workflow tests cover project/file/history loading, all repository states, create validation and redirects, configuration failure/retry, unavailable models, model metadata, optional capability fields, duplicate requests, start/cancel confirmation, terminal states, readable 409/422/500 failures, and late responses after route/account changes. API tests cover encoded IDs, payloads, signals, malformed responses, public configuration allowlisting, diff/tests, and resource identity. Demo tests cover the full lifecycle and account isolation.
+
+### Workspace API contract (days 9–12)
+
+These frontend integrations are ready, but the repository's backend endpoints are still scaffolds. Implement the following authenticated endpoints to use API mode. All mutations return the complete updated task; start may respond with HTTP 202 and should enqueue work without waiting for the AI run to finish.
+
+| Method | Path | Request / response |
+| --- | --- | --- |
+| GET | `/projects/:projectId` | `ProjectDetails` |
+| GET | `/agents/config` | Public `AgentConfig`, without credentials |
+| POST | `/projects/:projectId/tasks` | `CreateTaskInput` → `TaskDetails` |
+| GET | `/tasks/:taskId` | `TaskDetails` |
+| POST | `/tasks/:taskId/start` | No body → `TaskDetails` |
+| POST | `/tasks/:taskId/cancel` | No body → `TaskDetails` |
+| GET | `/tasks/:taskId/diff` | `TaskDiff` |
+| GET | `/tasks/:taskId/tests` | `TaskTests` |
+
+See `src/types/workspace.ts` for exact TypeScript contracts. Detail responses extend the list types above:
+
+```ts
+type ProjectDetails = Project & {
+  repositoryStatus: 'ready' | 'indexing' | 'error' | 'disconnected'
+  files: { path: string; size: number }[] // relative paths; bytes; metadata only
+  tasks: Task[] // complete project history, each task belonging to this project
+}
+type CreateTaskInput = {
+  description: string
+  constraints: string
+  mode: 'implement' | 'explain' | 'review'
+  provider?: string // 'auto' by default when model selection is supported
+  model?: string // only for an explicitly selected provider
+}
+type TaskDetails = Task & CreateTaskInput & { branch: string | null }
+type AgentConfig = {
+  modes: ('implement' | 'explain' | 'review')[] // includes implement
+  supportsModelSelection: boolean
+  providers: {
+    id: string; label: string; available: boolean
+    models: { id: string; label: string; available: boolean }[]
+  }[]
+}
+type TaskDiff = { files: { path: string; status: 'added' | 'modified' | 'deleted'; diff: string }[] }
+type TaskTests = { status: 'not_run' | 'running' | 'passed' | 'failed'; passed: number; failed: number; output: string }
+```
+
+Return unavailable providers with `available: false` so their configuration state can be displayed. IDs must be unique within provider/model lists. The frontend omits provider/model fields when `supportsModelSelection` is false, validates responses, cancels abandoned requests, and ignores stale data. The backend must enforce ownership, supported options, repository readiness, allowed transitions, and constraints independently. Use 404 for missing resources, 409 for conflicting state, and 422 for invalid inputs. Existing cookie-session and CSRF requirements above apply to these endpoints too.
+
+Frontend checks passed with `npm.cmd run lint`, `npm.cmd test`, and `npm.cmd run build` on Windows. Use `npm.cmd` if PowerShell blocks the `npm.ps1` shim.
 
 For visual review, check login/register at desktop and mobile widths, keyboard tab order, the mobile navigation dialog (Escape closes it), and page scrolling. Deployments using BrowserRouter must fall back to `index.html` for frontend routes while keeping API paths routed to the backend.
 

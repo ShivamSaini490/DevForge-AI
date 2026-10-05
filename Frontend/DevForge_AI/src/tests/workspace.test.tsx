@@ -126,15 +126,16 @@ describe('day 7 projects', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }))
     expect(await screen.findByRole('heading', { name: 'Storefront' })).toBeInTheDocument()
   })
-  it('distinguishes no projects from no matches and explains the connection milestone', async () => {
+  it('distinguishes no projects from no matches and opens the project form', async () => {
     vi.mocked(projectService.list).mockResolvedValue([])
     const user = userEvent.setup()
     open('projects')
     expect(await screen.findByRole('heading', { name: 'No projects yet' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'No matching projects' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Create / Connect project' }))
-    expect(screen.getByRole('dialog', { name: 'Create or connect a project' })).toHaveTextContent('not available in this workspace yet')
-    await user.click(screen.getByRole('button', { name: 'Back to workspace' }))
+    expect(screen.getByRole('dialog', { name: 'Create or connect a project' })).toHaveTextContent('Repository URL')
+    expect(screen.getByLabelText('Default branch')).toHaveValue('main')
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
   it('ignores a previous account’s late response and cancels its request', async () => {

@@ -12,8 +12,9 @@ vi.mock('../services/authService', () => ({
   isDemoAuth: false,
   authService: { me: vi.fn(), login: vi.fn(), register: vi.fn(), logout: vi.fn() },
 }))
-vi.mock('../services/projectService', () => ({ projectService: { list: async () => [] } }))
-vi.mock('../services/taskService', () => ({ taskService: { list: async () => [] } }))
+vi.mock('../services/projectService', () => ({ projectService: { list: async () => [], get: async () => { throw new Error('Project not found.') } } }))
+vi.mock('../services/taskService', () => ({ taskService: { list: async () => [], get: async () => { throw new Error('Task not found.') } } }))
+vi.mock('../services/agentService', () => ({ agentService: { config: async () => ({ modes: ['implement'], supportsModelSelection: false, providers: [] }) } }))
 const account = { id: '1', name: 'Alex Morgan', email: 'alex@example.com' }
 function open(path = '/login') {
   return render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>)
