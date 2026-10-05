@@ -1,0 +1,47 @@
+# Web API and validation
+fastapi
+uvicorn[standard]
+pydantic-settings
+python-dotenv
+python-multipart
+email-validator
+orjson
+sse-starlette
+
+# Database and migrations
+SQLAlchemy[asyncio]
+alembic
+asyncpg
+psycopg[binary]
+aiosqlite
+pgvector
+
+# Authentication and security
+PyJWT[crypto]
+pwdlib[argon2]
+cryptography
+
+# Async integrations and background work
+httpx
+tenacity
+redis
+celery[redis]
+
+# Agentic AI, providers, MCP, and RAG
+openai
+anthropic
+langgraph
+langchain-core
+langchain-text-splitters
+tiktoken
+numpy
+rank-bm25
+mcp
+
+# Repository tools, configuration, and observability
+GitPython
+pathspec
+PyYAML
+structlog
+rich
+prometheus-client
