@@ -40,7 +40,11 @@ export interface CreateTaskInput {
   provider?: string
   model?: string
 }
-export interface TaskDetails extends Task, CreateTaskInput { branch: string | null }
+export interface TaskDetails extends Task, CreateTaskInput {
+  branch: string | null
+  startedAt?: string | null
+  finishedAt?: string | null
+}
 export interface AgentConfig {
   modes: TaskMode[]
   supportsModelSelection: boolean

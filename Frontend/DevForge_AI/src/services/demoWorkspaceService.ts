@@ -96,6 +96,8 @@ export const demoWorkspaceService = {
     if (!allowed) throw new ApiError('Task state changed.', 409)
     task.status = action === 'start' ? 'running' : 'cancelled'
     task.updatedAt = new Date().toISOString()
+    if (action === 'start') task.startedAt = task.updatedAt
+    else task.finishedAt = task.updatedAt
     return structuredClone(task)
   },
 }

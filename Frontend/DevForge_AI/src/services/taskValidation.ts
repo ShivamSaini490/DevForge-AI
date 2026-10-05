@@ -23,6 +23,10 @@ export function parseTaskDetails(value: unknown): TaskDetails {
     || !(value.branch === null || text(value.branch))
     || !(value.provider === undefined || text(value.provider)) || !(value.model === undefined || text(value.model))
     || (value.model !== undefined && (!value.provider || value.provider === 'auto'))) return invalid('task details')
+  for (const key of ['startedAt', 'finishedAt']) {
+    if (value[key] !== undefined && value[key] !== null && !(text(value[key]) && Number.isFinite(Date.parse(value[key])))) return invalid('task timestamps')
+  }
+  if (text(value.startedAt) && text(value.finishedAt) && Date.parse(value.finishedAt) < Date.parse(value.startedAt)) return invalid('task timestamps')
   return { ...task, description: value.description, constraints: value.constraints, mode: value.mode,
     branch: value.branch, provider: value.provider, model: value.model } as TaskDetails
 }

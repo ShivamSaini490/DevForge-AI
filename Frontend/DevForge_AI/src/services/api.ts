@@ -3,13 +3,14 @@ export class ApiError extends Error {
   constructor(message: string, status: number) { super(message); this.name = 'ApiError'; this.status = status }
 }
 const baseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+export const apiUrl = (path: string) => `${baseUrl}${path}`
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers)
   headers.set('Accept', 'application/json')
   if (options.body) headers.set('Content-Type', 'application/json')
   let response: Response
   try {
-    response = await fetch(`${baseUrl}${path}`, {
+    response = await fetch(apiUrl(path), {
       ...options, headers, credentials: 'include', signal: options.signal ?? AbortSignal.timeout(15000),
     })
   } catch {
