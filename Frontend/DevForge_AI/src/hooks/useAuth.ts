@@ -1,1 +1,1 @@
-// Scaffold for useAuth; implementation pending.
+export { useAuthStore as useAuth } from '../store/authStore'

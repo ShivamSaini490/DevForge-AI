@@ -1,78 +1,70 @@
-# React + TypeScript + Vite
+# DevForge AI frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Implementation of **days 1–5** of the supplied *Frontend 30 Days Plan* (PDF pages 9–13), retaining the existing React + TypeScript + Vite project.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Use Node.js 22.12+ (verified with Node 24) and npm.
 
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+cd Frontend/DevForge_AI
+npm install
+Copy-Item .env.example .env.local
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Open the local URL printed by Vite. A local, git-ignored `.env.local` is already prepared for development demo mode.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+**Demo login:** `demo@devforge.ai` / `DevForge123!`. You can also register a sample account and sign out/in within the same page session. This is an explicit development fixture, not real authentication. Accounts and sessions live in memory and reset on refresh; use sample details only. No credentials or tokens are persisted in browser storage. Production builds always use the API and exclude the demo module.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Delivered scope
 
+| Day | Implementation |
+| --- | --- |
+| 1 | Existing Vite/TypeScript setup, BrowserRouter, Zustand, folder structure, environment template, global styles |
+| 2 | Primary/secondary/danger/ghost buttons, loading/disabled states, input/textarea/select, native dialog modal, loader, empty state, six status badges, focus and label accessibility |
+| 3 | AppShell, responsive sidebar, topbar, PageHeader, required routes, recent tasks navigation, safe 404 |
+| 4 | Login page and form, required-field/email validation, password visibility, pending/error states, Enter submission |
+| 5 | Register/confirm-password validation, typed auth service, shared auth state, session initialization, protected routes, return to requested route, logout |
+
+The dashboard is a foundation welcome screen. Projects, project details, task creation/execution, and settings expose their reserved routes with honest placeholders; days 6–30 features are not implemented.
+
+## Routes
+
+Public: `/login`, `/register`.
+
+Protected: `/dashboard`, `/projects`, `/projects/:projectId`, `/projects/:projectId/tasks/new`, `/tasks`, `/tasks/:taskId`, `/settings`. The root redirects to the dashboard; unknown URLs show a 404.
+
+## Backend connection
+
+The repository's backend auth files are currently empty. Set `VITE_AUTH_MODE=api` and `VITE_API_BASE_URL` to the backend API base when it is implemented. Restart Vite after changing environment values. The default API base is `/api`; it needs a same-origin reverse proxy or an explicit backend URL.
+
+Expected frontend contract (to be implemented by the backend):
+
+| Method | Path | JSON body | Successful response |
+| --- | --- | --- | --- |
+| POST | /auth/login | { email, password } | User |
+| POST | /auth/register | { name, email, password } | User, with session established |
+| GET | /auth/me | none | User, or 401 for no session |
+| POST | /auth/logout | none | 204, with session invalidated |
+
+`User = { id: string, name: string, email: string }`.
+
+The client uses `credentials: 'include'` and an HTTP-only cookie session, restores it via `/auth/me`, and stores only the current user in Zustand memory. The backend must issue/expire cookies, enforce authorization, provide CSRF protection (including Origin validation and an appropriate SameSite policy), and configure credentialed CORS for the exact frontend origin if cross-origin. A frontend route guard alone does not secure an API. No provider keys belong in frontend code or VITE variables.
+
+Errors use safe status-based messages, and requests time out after 15 seconds. Logout clears local state even if the server is unavailable and explicitly reports that the server session may still exist.
+
+## Checks
+
+```powershell
+npm run lint
+npm test
+npm run build
+npm run preview
 ```
+
+Tests cover field validation, password visibility, Enter submission, pending/duplicate submission, registration payloads, protected deep links, all reserved routes, session restoration, logout success/failure, HTTP errors, and accessible status/field labels.
+
+For visual review, check login/register at desktop and mobile widths, keyboard tab order, the mobile navigation dialog (Escape closes it), and page scrolling. Deployments using BrowserRouter must fall back to `index.html` for frontend routes while keeping API paths routed to the backend.
+
+The implementation follows [React Router's declarative routing](https://reactrouter.com/start/declarative/routing) and [Zustand's create API](https://zustand.docs.pmnd.rs/reference/apis/create.html).
