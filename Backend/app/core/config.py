@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
     secret_key: str = "change-me"
     database_url: str = "postgresql+asyncpg://postgres:password@localhost:5432/devforge"
+    access_token_expire_minutes: int = 60
+
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
